@@ -28,6 +28,8 @@
 
 ## Examples
 
+For usage do look at the [reference](./reference/) crate.
+
 ### Hello world
 
 ```rust
