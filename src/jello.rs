@@ -8,6 +8,7 @@ pub struct Conf {
     pub threads: u8,
     pub memory_per_request: usize,
     pub memory_total: usize,
+    pub max_connections: usize,
 }
 
 /// Server, holds configuration, handlers, state and addr it listens on
@@ -27,6 +28,7 @@ impl<'server> Jello<'server, ()> {
                 threads: 1,
                 memory_per_request: 4 * 1024,
                 memory_total: 4 * 1024 * 1024 * 1024,
+                max_connections: 10000,
             },
             handlers: Vec::with_capacity(8),
             state: None,
@@ -51,6 +53,7 @@ impl<'server, S> Jello<'server, S> {
                 threads: 1,
                 memory_per_request: 4 * 1024,
                 memory_total: 4 * 1024 * 1024 * 1024,
+                max_connections: 10000,
             },
             handlers: Vec::with_capacity(8),
             state: Some(state),
@@ -74,6 +77,7 @@ impl<'server, S> Jello<'server, S> {
         let runtime = Runtime {
             state: self.state.as_mut(),
             handlers: &self.handlers,
+            conf: &self.conf,
         };
         runtime.run(addr)
     }
