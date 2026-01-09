@@ -3,15 +3,29 @@
 > A zero runtime allocation and high performance http server core
 
 
+```rust
+fn main() {
+    Jello::new()
+        .handle("/", |_, _, res| {
+            or500!(res.write_str("Hello World"));
+            crate::Status::Ok
+        })
+        .listen(addr!((0,0,0,0):1234))
+        .expect("Failed to start server");
+}
+```
+
+
 ## Features
 
-- all heap allocation happens before the server starts accepting connections.
+- all heap allocation happens before the server starts accepting connections
 - no locking or state between threads
-- multi threading enabled via `Jellostar::Conf` > 1 and `REUSEPORT`
+- multi threading enabled via `Jellostar::Conf::threads` > 1 and `REUSEPORT`
 - one state machine and its state per thread
-- fine grained memory usage control via `--request-memory` and `--memory`.
-- injecting state via `Server.state(name, value)`, extraction via the `state`
-  param in `jellostar::Handle`
+- fine grained memory usage control via `Jello::Conf::memory_per_request` and
+  `Jello::Conf::memory_totoal`.
+- injecting state via `Jello::with_state`, extraction via a handlers first
+  param
 
 ## Non features
 
@@ -19,7 +33,7 @@
 - no per request heap allocation in the server core
 - no async/Future overhead
 
-## Comparison to other similar http servers
+## Comparison to similar projects
 
 ## Why its fast
 
@@ -31,18 +45,3 @@
 ## Examples
 
 For usage do look at the [reference](./reference/) crate.
-
-### Hello world
-
-```rust
-fn main() {
-    Jello::new()
-        .handle("/", |_, _, _| {
-            println!("Pong");
-            crate::Status::Ok
-        })
-        .listen(addr!((0,0,0,0):1234))
-        .expect("Failed to start server");
-}
-```
-
