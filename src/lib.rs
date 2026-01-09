@@ -8,37 +8,48 @@ mod req;
 mod res;
 mod status;
 
-// reexport to make it jellostar::
+// reexport to make it jellostar::Status
+pub use jello::*;
 pub use status::Status;
 
-pub type Handle<S> = fn(&mut S, &mut req::Request, &mut res::Response) -> Status;
+/// Non-capturing closures or function pointers
+pub type Handle<S> = fn(&mut S, &req::Request, &mut res::Response) -> Status;
 
 #[cfg(test)]
 mod test {
     use std::collections::HashMap;
 
-    use crate::jello::Jello;
+    use crate::{addr, jello::Jello, or500};
 
     #[test]
-    fn basic() {}
+    fn basic() {
+        Jello::new()
+            .handle("/", |_, _, res| {
+                or500!(res.write_str("Hello World"));
+                crate::Status::Ok
+            })
+            .listen(addr!((0,0,0,0):1234))
+            .expect("Failed to start server");
+    }
 
     #[test]
     fn jello() {
-        Jello::<()>::new()
-            .handle("/hello-world", |_: _, _, _| {
-                println!("hello-world");
+        Jello::new()
+            .handle("/hello-world", |_, _, res| {
+                or500!(res.write_str("Hello World"));
                 crate::Status::Ok
             })
-            .handle("/", |_: _, _, _| {
-                println!("root");
+            .handle("/", |_, _, res| {
+                or500!(res.write_str("root"));
                 crate::Status::Ok
-            });
+            })
+            .listen(addr!((0,0,0,0):1234))
+            .expect("Failed to start server");
     }
 
     #[test]
     fn state() {
-        Jello::new()
-            .state(HashMap::<usize, &'static str>::new())
+        Jello::with_state(HashMap::<usize, &'static str>::new())
             .handle("/create", |state, _, _| {
                 let count = state.len();
                 state.insert(count, "hola");
@@ -48,6 +59,8 @@ mod test {
                 state.values().for_each(|s| print!("{}", s));
                 println!("");
                 crate::Status::Ok
-            });
+            })
+            .listen(addr!((0,0,0,0):1234))
+            .expect("Failed to start server");
     }
 }
