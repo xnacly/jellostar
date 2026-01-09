@@ -1,16 +1,17 @@
 # Jellostar
 
-> A zero runtime allocation and high performance http server core
+> A zero runtime allocation and high performance http server core, its a
+> throughput monster
 
 
 ```rust
 fn main() {
-    Jello::new()
+    jellostar::Jello::new()
         .handle("/", |_, _, res| {
             or500!(res.write_str("Hello World"));
-            crate::Status::Ok
+            jellostar::Status::Ok
         })
-        .listen(addr!((0,0,0,0):1234))
+        .listen(jellostar::addr!((0,0,0,0):1234))
         .expect("Failed to start server");
 }
 ```
@@ -20,12 +21,15 @@ fn main() {
 
 - all heap allocation happens before the server starts accepting connections
 - no locking or state between threads
-- multi threading enabled via `Jellostar::Conf::threads` > 1 and `REUSEPORT`
+- multi threading enabled via `jellostar::Conf::threads` > 1 and `REUSEPORT`
 - one state machine and its state per thread
-- fine grained memory usage control via `Jello::Conf::memory_per_request` and
-  `Jello::Conf::memory_totoal`.
+- fine grained memory usage control via `jellostar::Conf::memory_per_request` and
+  `jellostar::Conf::memory_totoal`.
 - injecting state via `Jello::with_state`, extraction via a handlers first
   param
+- non-blocking and fast handlers
+- if the event loop is blocked by a slow handler, jello drops the connection,
+  configurable (in `ms`) via `jellostar::Conf::max_request_time`
 
 ## Non features
 
